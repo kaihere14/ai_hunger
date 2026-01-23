@@ -1,12 +1,7 @@
 # AI Hunger  
-![Next.js](https://img.shields.io/badge/Next.js-16.1.4-000000?logo=nextdotjs) ![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react) ![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-0.1.0-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16.1.4-000000?logo=nextdotjs) ![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react) ![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-0.1.1-blue)
 
-**AI Hunger** is a lightweight Next.js demo that lets you create, list, and “demolish” AI characters. Each deletion increments a global counter (`totalAiDemolished`). The project showcases:
-
-* **Full‑stack** Next.js API routes with **MongoDB** persistence.  
-* A clean **React component** library (`Card`, `Counter`, `FinalAnswer`, …).  
-* Context‑based state management for the UI (`AnswerContext`).  
-* Real‑time counter tracking of how many AIs have been removed.
+**AI Hunger** is a lightweight Next.js demo that lets you create, list, and “demolish” AI characters. Each deletion increments a global counter (`totalAiDemolished`). The project now also includes a simple background‑processing queue for AI‑related tasks.
 
 > **Demo:** Deploy to Vercel in seconds and start adding AI personalities right away.
 
@@ -39,7 +34,8 @@
 | **Responsive UI** | Card‑based layout with Tailwind CSS, ready for mobile & desktop. | ✅ Stable |
 | **Context API** | Centralised answer handling via `AnswerContext`. | ✅ Stable |
 | **API‑first design** | All data operations are performed through Next.js API routes (`/api/ai`, `/api/counter`). | ✅ Stable |
-| **Docker ready** | Dockerfile (not in repo) can be added; instructions provided. | ⚙️ Planned |
+| **AI Worker Queue** | Simple background queue that processes AI‑related jobs (e.g., heavy calculations) via `/api/ai‑worker`. | 🟡 Experimental |
+| **Docker ready** | Dockerfile (example) can be used for containerised deployments. | ⚙️ Planned |
 | **Tests** | Jest + React Testing Library scaffold (future). | ⚙️ Planned |
 
 ---
@@ -51,6 +47,7 @@
 | **Language** | **TypeScript 5** | Type safety across front‑ and back‑end |
 | **UI** | **React 19**, **Tailwind CSS 4** | Modern component model + utility‑first styling |
 | **Database** | **MongoDB** (via **Mongoose 9**) | Document store, easy schema definition |
+| **Queue** | Custom in‑process queue (`utils/ai‑worker/queue.ts`) | Demonstrates background job handling without external broker |
 | **HTTP Client** | **Axios** | Used in components (future) for API calls |
 | **Linting** | **ESLint** (Next.js config) | Consistent code style |
 | **Build / Deploy** | **Vercel** (optimal for Next.js) | Zero‑config production hosting |
@@ -60,37 +57,41 @@
 ## Architecture
 ```
 ai_hunger/
-├─ app/                     # Next.js App Router
+├─ app/
 │  ├─ api/
-│  │  ├─ ai/                # CRUD endpoints for AI documents
-│  │  └─ counter/           # GET endpoint for demolition counter
-│  ├─ layout.tsx           # Root layout (global CSS, fonts, etc.)
-│  ├─ page.tsx             # Home page – composes UI components
-│  └─ favicon.ico
-├─ components/              # Re‑usable UI primitives
+│  │  ├─ ai/               # CRUD endpoints for AI documents
+│  │  ├─ counter/          # GET endpoint for demolition counter
+│  │  └─ ai-worker/        # Queue endpoint for background AI jobs
+│  ├─ layout.tsx
+│  └─ page.tsx
+├─ components/
 │  ├─ Card.tsx
 │  ├─ CardContainer.tsx
 │  ├─ Center.tsx
 │  ├─ Counter.tsx
 │  ├─ FinalAnswer.tsx
-│  └─ InputContainer.tsx
+│  └─ InputContainer.tsx   # now only sets a fake answer (placeholder)
 ├─ utils/
+│  ├─ ai‑worker/
+│  │   └─ queue.ts         # simple job queue implementation
 │  ├─ context/
-│  │   └─ AnswerContext.tsx   # React context for answer handling
+│  │   └─ AnswerContext.tsx
 │  ├─ db/
-│  │   └─ connectDB.tsx       # Mongoose connection helper
+│  │   └─ connectDB.tsx
 │  └─ models/
-│      ├─ ai.model.tsx        # Mongoose schema for AI
-│      └─ counter.model.tsx   # Mongoose schema for demolition counter
-├─ public/                    # Static assets (SVGs, icons)
+│      ├─ ai.model.tsx
+│      ├─ counter.model.tsx
+│      └─ round.model.tsx   # schema for a “round” of AI processing
+├─ public/
 ├─ tailwind.config.ts
 ├─ tsconfig.json
 └─ package.json
 ```
 
 * **API Layer** – `app/api/*/route.tsx` files expose REST‑style endpoints using the Next.js Server Actions API.  
-* **Data Layer** – Mongoose models (`AIModel`, `CounterModel`) encapsulate MongoDB documents.  
-* **Presentation Layer** – React components consume the API via `fetch`/`axios` (implementation left to the developer) and render cards, counters, and input forms.  
+* **Queue Layer** – `utils/ai‑worker/queue.ts` provides an in‑process job queue; jobs are triggered via the `/api/ai‑worker` route.  
+* **Data Layer** – Mongoose models (`AIModel`, `CounterModel`, `RoundModel`) encapsulate MongoDB documents.  
+* **Presentation Layer** – React components consume the API via `fetch`/`axios` and render cards, counters, and input forms.  
 * **State Layer** – `AnswerContext` provides a global store for user‑generated answers, enabling cross‑component communication without prop drilling.
 
 ---
@@ -113,9 +114,6 @@ cd ai_hunger
 
 # 2️⃣ Install dependencies
 npm ci   # uses package-lock.json for reproducible install
-
-# 3️⃣ (Optional) Install Tailwind CLI globally if you want to run the CSS watcher manually
-# npm i -g tailwindcss
 ```
 
 ### Configuration
@@ -141,11 +139,11 @@ npm run dev
 # → http://localhost:3000
 ```
 
-The UI will load with three main sections:
+The UI loads with three main sections:
 
 1. **CardContainer** – displays all stored AI cards (fetched from `/api/ai`).  
 2. **Center** – shows the current demolition counter (`/api/counter`).  
-3. **InputContainer** – form to add a new AI entry.
+3. **InputContainer** – currently a placeholder that sets a fake answer (`"This is a fake answer for now!"`) and clears the input field. Future work will wire this up to the AI creation endpoint.
 
 ### API Reference
 
@@ -157,6 +155,8 @@ All endpoints return JSON and are built with Next.js’ `NextResponse`.
 | `POST` | `/api/ai` | Create a new AI entry. | `{ name, image, description, personality, slotNumber }` | `curl -X POST http://localhost:3000/api/ai -H "Content-Type: application/json" -d '{"name":"HAL","image":"/hal.png","description":"Space‑faring AI","personality":"Logical","slotNumber":1}'` |
 | `DELETE` | `/api/ai` | Delete an AI by its `slotNumber`. Increments the demolition counter. | `{ slotNumber }` | `curl -X DELETE http://localhost:3000/api/ai -H "Content-Type: application/json" -d '{"slotNumber":1}'` |
 | `GET` | `/api/counter` | Get the total number of demolished AIs. | – | `curl -X GET http://localhost:3000/api/counter` |
+| `POST` | `/api/ai-worker` | Enqueue a background job (e.g., heavy AI computation). | `{ type, payload }` | `curl -X POST http://localhost:3000/api/ai-worker -H "Content-Type: application/json" -d '{"type":"processRound","payload":{"roundId":"abc123"}}'` |
+| `GET` | `/api/ai-worker/status` | Retrieve the status of queued jobs. | – | `curl -X GET http://localhost:3000/api/ai-worker/status` |
 
 #### Sample Front‑end fetch (React)
 
@@ -164,8 +164,7 @@ All endpoints return JSON and are built with Next.js’ `NextResponse`.
 // Fetch all AIs
 const fetchAis = async () => {
   const res = await fetch('/api/ai');
-  const data = await res.json();
-  return data; // array of AI objects
+  return await res.json(); // array of AI objects
 };
 
 // Delete an AI
@@ -174,6 +173,15 @@ const deleteAi = async (slotNumber: number) => {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ slotNumber })
+  });
+};
+
+// Enqueue a job
+const enqueueJob = async (type: string, payload: any) => {
+  await fetch('/api/ai-worker', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, payload })
   });
 };
 ```
@@ -198,7 +206,8 @@ const deleteAi = async (slotNumber: number) => {
 ### Debugging
 * Use the built‑in Next.js error overlay for client‑side issues.  
 * Server‑side logs appear in the terminal where `npm run dev` is executed.  
-* MongoDB connection errors are logged by `connectDB.tsx`.
+* MongoDB connection errors are logged by `connectDB.tsx`.  
+* Queue‑related logs are emitted from `utils/ai‑worker/queue.ts`.
 
 ---
 
@@ -254,10 +263,10 @@ We welcome contributions! Follow these steps:
 7. **Push** to your fork and open a **Pull Request** against `main`.  
 
 ### Code Review Guidelines
-* Ensure **type safety** – no `any` unless absolutely necessary.  
+* Ensure **type safety** – avoid `any` unless absolutely necessary.  
 * Keep UI components **stateless** where possible; use `AnswerContext` for shared state.  
-* Update the **README** if you add new endpoints or UI components.  
-* Follow the existing folder conventions (`app/`, `components/`, `utils/`).
+* Update the **README** if you add new endpoints, UI components, or queue jobs.  
+* Follow the existing folder conventions (`app/`, `components/`, `utils/`).  
 
 ---
 
@@ -265,8 +274,10 @@ We welcome contributions! Follow these steps:
 - [ ] Add **unit & integration tests** (Jest + React Testing Library).  
 - [ ] Implement **Dockerfile** and CI/CD pipeline (GitHub Actions).  
 - [ ] Provide **authentication** (JWT) for protected AI modifications.  
-- [ ] Introduce **real‑time updates** via WebSockets or Next.js Server‑Sent Events.  
+- [ ] Introduce **real‑time updates** via WebSockets or Server‑Sent Events.  
 - [ ] Expand UI with **search & pagination** for large AI collections.  
+- [ ] Harden the **AI Worker Queue** (persisted job store, retries).  
+- [ ] Add **admin dashboard** to monitor queue status and round statistics.  
 
 ---
 
