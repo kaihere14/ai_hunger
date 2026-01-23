@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from 'react'
 import { useAnswer } from '@/utils/context/AnswerContext'
+import axios from "axios";
 
 const InputContainer = () => {
     const [message, setMessage] = useState("")
@@ -8,7 +9,7 @@ const InputContainer = () => {
 
     const formSumbitHandle = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Fake answer logic - you can customize this
+        const repsonse = await axios.post("http://localhost:3000/api/ai-worker", { message })
         setAnswer("This is a fake answer for now!");
         setMessage("")
 
