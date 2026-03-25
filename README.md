@@ -1,12 +1,12 @@
-# AI Hunger  
-![Next.js](https://img.shields.io/badge/Next.js-16.1.4-000000?logo=nextdotjs) ![React](https://img.shields.io/badge/React-19.2.3-61DAFB?logo=react) ![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-0.1.1-blue)
 
-**AI Hunger** is a lightweight Next.js demo that lets you create, list, and “demolish” AI characters. Each deletion increments a global counter (`totalAiDemolished`). The project now also includes a simple background‑processing queue for AI‑related tasks.
+# 🤖 AI Hunger  
+![Next.js](https://img.shields.io/badge/Next.js-15.0.0-000000?logo=nextdotjs) ![React](https://img.shields.io/badge/React-19.0.0-61DAFB?logo=react) ![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?logo=mongodb) ![License](https://img.shields.io/badge/License-MIT-green) ![Version](https://img.shields.io/badge/Version-0.1.1-blue)
+
+**AI Hunger** is a lightweight Next.js demo that lets you create, list, and “demolish” AI characters. Each deletion increments a global counter (`totalAiDemolished`) stored in MongoDB. The project features a clean, component-based architecture using the Next.js App Router.
 
 > **Demo:** Deploy to Vercel in seconds and start adding AI personalities right away.
 
 ---
-
 ## Table of Contents
 - [Features](#features)  
 - [Tech Stack](#tech-stack)  
@@ -26,7 +26,7 @@
 
 ---
 
-## Features
+## 🚀 Features
 | Feature | Description | Status |
 |---------|-------------|--------|
 | **AI CRUD** | Create, read, and delete AI entries (name, image, description, personality, slot number). | ✅ Stable |
@@ -34,26 +34,21 @@
 | **Responsive UI** | Card‑based layout with Tailwind CSS, ready for mobile & desktop. | ✅ Stable |
 | **Context API** | Centralised answer handling via `AnswerContext`. | ✅ Stable |
 | **API‑first design** | All data operations are performed through Next.js API routes (`/api/ai`, `/api/counter`). | ✅ Stable |
-| **AI Worker Queue** | Simple background queue that processes AI‑related jobs (e.g., heavy calculations) via `/api/ai‑worker`. | 🟡 Experimental |
-| **Docker ready** | Dockerfile (example) can be used for containerised deployments. | ⚙️ Planned |
-| **Tests** | Jest + React Testing Library scaffold (future). | ⚙️ Planned |
+| **Docker ready** | Dockerfile (example) for containerised deployments. | ⚙️ Planned |
+| **Tests** | Jest + React Testing Library scaffold. | ⚙️ Planned |
 
 ---
-
-## Tech Stack
+## 🛠️ Tech Stack
 | Layer | Technology | Reason |
 |-------|------------|--------|
-| **Framework** | **Next.js 16** (App Router) | Server‑side rendering, API routes, file‑system routing |
-| **Language** | **TypeScript 5** | Type safety across front‑ and back‑end |
-| **UI** | **React 19**, **Tailwind CSS 4** | Modern component model + utility‑first styling |
-| **Database** | **MongoDB** (via **Mongoose 9**) | Document store, easy schema definition |
-| **Queue** | Custom in‑process queue (`utils/ai‑worker/queue.ts`) | Demonstrates background job handling without external broker |
-| **HTTP Client** | **Axios** | Used in components (future) for API calls |
-| **Linting** | **ESLint** (Next.js config) | Consistent code style |
-| **Build / Deploy** | **Vercel** (optimal for Next.js) | Zero‑config production hosting |
+| **Framework** | **Next.js** (App Router) | Server‑side rendering, API routes, and file‑system routing |
+| **Language** | **TypeScript** | Type safety across front‑ and back‑end |
+| **UI** | **React 19**, **Tailwind CSS** | Modern component model + utility‑first styling |
+| **Database** | **MongoDB** (via **Mongoose**) | Document store for AI profiles and global counters |
+| **Linting** | **ESLint** | Consistent code style and best practices |
+| **Build / Deploy** | **Vercel** | Optimized hosting for Next.js applications |
 
 ---
-
 ## Architecture
 ```
 ai_hunger/
@@ -270,17 +265,15 @@ We welcome contributions! Follow these steps:
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 - [ ] Add **unit & integration tests** (Jest + React Testing Library).  
 - [ ] Implement **Dockerfile** and CI/CD pipeline (GitHub Actions).  
 - [ ] Provide **authentication** (JWT) for protected AI modifications.  
 - [ ] Introduce **real‑time updates** via WebSockets or Server‑Sent Events.  
 - [ ] Expand UI with **search & pagination** for large AI collections.  
-- [ ] Harden the **AI Worker Queue** (persisted job store, retries).  
-- [ ] Add **admin dashboard** to monitor queue status and round statistics.  
+- [ ] Add **admin dashboard** to monitor demolition statistics.  
 
 ---
-
 ## License & Credits
 
 **License:** MIT © 2024 kaihere14  
